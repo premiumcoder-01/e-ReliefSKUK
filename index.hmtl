@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Laporan Guru Relief - SK Ulu Kenas</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white !important; color: black !important; }
+        }
+        .print-only { display: none; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Navigation Header -->
+    <header class="bg-gradient-to-r from-sky-900 via-brand-800 to-indigo-900 text-white shadow-lg no-print sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+            <!-- Brand / Crest Logo -->
+            <div class="flex items-center space-x-3.5">
+                <div class="bg-white p-1 rounded-xl shadow-md flex items-center justify-center w-12 h-14 overflow-hidden">
+                    <!-- Image Logo SKUK -->
+                    <img id="app-logo-img" src="logo_skuk.png" alt="Logo SK Ulu Kenas" class="w-full h-full object-contain" onerror="this.onerror=null; drawFallbackLogoToImg(this);">
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-lg sm:text-xl tracking-tight leading-tight text-white flex items-center gap-2">
+                        SK ULU KENAS <span class="text-xs font-semibold bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full uppercase tracking-wider">e-Relief</span>
+                    </h1>
+                    <p class="text-xs text-sky-200 font-medium">Sekolah Kebangsaan Ulu Kenas, Kuala Kangsar, Perak</p>
+                </div>
+            </div>
+
+            <!-- Header Quick Actions -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button onclick="cetakTetingkap()" class="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition border border-white/20 flex items-center gap-1.5">
+                    <i class="fa-solid fa-print"></i>
+                    <span>Cetak Slip</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs (No Print) -->
+    <nav class="bg-white border-b border-slate-200 shadow-sm no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex space-x-8 overflow-x-auto">
+                <button id="tab-btn-dashboard" onclick="showTab('dashboard')" class="tab-btn py-3.5 px-1 border-b-2 font-semibold text-sm flex items-center gap-2 border-brand-600 text-brand-600">
+                    <i class="fa-solid fa-chart-pie"></i> Dashboard & Laporan
+                </button>
+                <button id="tab-btn-borang" onclick="showTab('borang')" class="tab-btn py-3.5 px-1 border-b-2 font-semibold text-sm flex items-center gap-2 border-transparent text-slate-500 hover:text-slate-700">
+                    <i class="fa-solid fa-circle-plus text-emerald-600"></i> Rekod Guru Relief
+                </button>
+                <button id="tab-btn-guru" onclick="showTab('guru')" class="tab-btn py-3.5 px-1 border-b-2 font-semibold text-sm flex items-center gap-2 border-transparent text-slate-500 hover:text-slate-700">
+                    <i class="fa-solid fa-user-tie"></i> Senarai Guru SKUK
+                </button>
+                <button id="tab-btn-slip" onclick="showTab('slip')" class="tab-btn py-3.5 px-1 border-b-2 font-semibold text-sm flex items-center gap-2 border-transparent text-slate-500 hover:text-slate-700">
+                    <i class="fa-solid fa-file-invoice"></i> Jana Slip Relief
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
+
+        <!-- ================= TAB 1: DASHBOARD & REKOD SENARAI ================= -->
+        <section id="tab-dashboard" class="space-y-6">
+            
+            <!-- Statistics Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 no-print">
+                <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Jumlah Relief Hari Ini</p>
+                        <h3 id="stat-today-total" class="text-2xl font-black text-slate-800 mt-1">0</h3>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Sesi Persekolahan</p>
+                    </div>
+                    <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-calendar-day"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Guru Tidak Hadir</p>
+                        <h3 id="stat-absent-count" class="text-2xl font-black text-rose-600 mt-1">0</h3>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Kursus / Sakit / CRK</p>
+                    </div>
+                    <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-user-xmark"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Guru Ganti Aktif</p>
+                        <h3 id="stat-relief-teachers" class="text-2xl font-black text-emerald-600 mt-1">0</h3>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Mengambil Kelas Relief</p>
+                    </div>
+                    <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-user-check"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Jumlah Guru SKUK</p>
+                        <h3 id="stat-total-staff" class="text-2xl font-black text-indigo-600 mt-1">12</h3>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Terdiri Akademik & Admin</p>
+                    </div>
+                    <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-school"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Toolbar -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row gap-3 items-center justify-between no-print">
+                <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                    <div class="relative w-full sm:w-auto">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                        <input type="text" id="filter-search" oninput="renderReliefTable()" placeholder="Cari nama guru / kelas..." class="w-full sm:w-64 pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-600">
+                    </div>
+                    <div>
+                        <input type="date" id="filter-date" onchange="renderReliefTable()" class="py-2 px-3 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-600 text-slate-700 font-medium">
+                    </div>
+                    <button onclick="resetFilters()" class="text-xs font-semibold text-slate-500 hover:text-slate-800 underline px-2">Reset Filter</button>
+                </div>
+
+                <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+                    <button onclick="showTab('borang')" class="bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow transition flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Tambah Rekod Relief
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Table Card -->
+            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                    <div>
+                        <h2 class="font-bold text-slate-800 text-base">Senarai Laporan Relief / Guru Ganti</h2>
+                        <p class="text-xs text-slate-500">Rekod tugasan relief, kehadiran & kawalan kelas murid</p>
+                    </div>
+                    <span id="record-count-badge" class="bg-slate-100 text-slate-600 text-xs font-bold px-2.5 py-1 rounded-full">0 Rekod</span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
+                            <tr>
+                                <th class="px-4 py-3.5">Tarikh & Waktu</th>
+                                <th class="px-4 py-3.5">Guru Tidak Hadir (Sebab)</th>
+                                <th class="px-4 py-3.5">Guru Relief (Ganti)</th>
+                                <th class="px-4 py-3.5">Kelas & Subjek</th>
+                                <th class="px-4 py-3.5">Kehadiran Murid</th>
+                                <th class="px-4 py-3.5">Tingkah Laku</th>
+                                <th class="px-4 py-3.5">Tugasan / Aktiviti</th>
+                                <th class="px-4 py-3.5 text-center no-print">Tindakan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="relief-table-body" class="divide-y divide-slate-100">
+                            <!-- Dynamic Content -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="hidden py-12 text-center">
+                    <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+                        <i class="fa-solid fa-folder-open"></i>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-700">Tiada Rekod Ditemui</h3>
+                    <p class="text-xs text-slate-400 mt-1">Sila tambah rekod baru atau ubah penapis tarikh.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 2: BORANG REKOD RELIEF ================= -->
+        <section id="tab-borang" class="hidden max-w-3xl mx-auto space-y-6">
+            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-md overflow-hidden">
+                <div class="bg-gradient-to-r from-brand-800 to-sky-900 px-6 py-4 text-white">
+                    <h2 class="text-base font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square text-amber-400"></i> Borang Rekod Guru Relief / Minit Curai
+                    </h2>
+                    <p class="text-xs text-sky-200 mt-0.5">Sila isi maklumat pertukaran guru ganti dan laporan kelas dengan lengkap</p>
+                </div>
+
+                <form id="form-relief" onsubmit="saveReliefRecord(event)" class="p-6 space-y-5">
+                    <input type="hidden" id="edit-id" value="">
+
+                    <!-- Tarikh & Masa -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Tarikh <span class="text-rose-500">*</span></label>
+                            <input type="date" id="input-tarikh" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-600 focus:outline-none font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Waktu / Masa <span class="text-rose-500">*</span></label>
+                            <select id="input-waktu" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-600 focus:outline-none">
+                                <option value="">-- Pilih Waktu Masa --</option>
+                                <option value="Waktu 1 (07:45 - 08:15)">Waktu 1 (07:45 - 08:15)</option>
+                                <option value="Waktu 2 (08:15 - 08:45)">Waktu 2 (08:15 - 08:45)</option>
+                                <option value="Waktu 3 (08:45 - 09:15)">Waktu 3 (08:45 - 09:15)</option>
+                                <option value="Waktu 4 (09:15 - 09:45)">Waktu 4 (09:15 - 09:45)</option>
+                                <option value="REHAT (09:45 - 10:15)" disabled>--- REHAT ---</option>
+                                <option value="Waktu 5 (10:15 - 10:45)">Waktu 5 (10:15 - 10:45)</option>
+                                <option value="Waktu 6 (10:45 - 11:15)">Waktu 6 (10:45 - 11:15)</option>
+                                <option value="Waktu 7 (11:15 - 11:45)">Waktu 7 (11:15 - 11:45)</option>
+                                <option value="Waktu 8 (11:45 - 12:15)">Waktu 8 (11:45 - 12:15)</option>
+                                <option value="Waktu 9 (12:15 - 12:45)">Waktu 9 (12:15 - 12:45)</option>
+                                <option value="Waktu 10 (12:45 - 01:15)">Waktu 10 (12:45 - 01:15)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Guru Tidak Hadir & Sebab -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Guru Tidak Hadir (Sebab Ditugaskan Relief) <span class="text-rose-500">*</span></label>
+                            <select id="input-guru-absent" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-600 focus:outline-none">
+                                <!-- Dynamic Options -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Sebab Ketidakhadiran <span class="text-rose-500">*</span></label>
+                            <select id="input-sebab" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-600 focus:outline-none">
+                                <option value="Kursus / Bengkel">Kursus / Bengkel</option>
+                                <option value="Cuti Sakit (MC)">Cuti Sakit (MC)</option>
+                                <option value="Tugas Luar / Pengawasan">Tugas Luar / Pengawasan</option>
+                                <option value="Cuti Rehat Khas (CRK)">Cuti Rehat Khas (CRK)</option>
+                                <option value="Urusan Rasmi">Urusan Rasmi</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Guru Relief & Kelas -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Guru Relief / Guru Ganti <span class="text-rose-500">*</span></label>
+                            <select id="input-guru-relief" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-600 focus:outline-none">
+                                <!-- Dynamic Options -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Kelas <span class="text-rose-500">*</span></label>
+                            <select id="input-kelas" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-600 focus:outline-none">
+                                <option value="Tahun 1 Arif">Tahun 1 Arif</option>
+                                <option value="Tahun 2 Bestari">Tahun 2 Bestari</option>
+                                <option value="Tahun 3 Cerdik">Tahun 3 Cerdik</option>
+                                <option value="Tahun 4 Dinamik">Tahun 4 Dinamik</option>
+                                <option value="Tahun 5 Elit">Tahun 5 Elit</option>
+                                <option value="Tahun 6 Fikrah">Tahun 6 Fikrah</option>
+                                <option value="Pra-Sekolah">Pra-Sekolah</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Kehadiran & Disiplin Murid -->
+                    <div class="p-4 bg-amber-50/60 rounded-2xl border border-amber-200/80 space-y-4">
+                        <h3 class="text-xs font-extrabold text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-users-rectangle text-amber-600"></i> Laporan Kehadiran & Disiplin Kelas
+                        </h3>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Jumlah Murid Keseluruhan <span class="text-rose-500">*</span></label>
+                                <select id="input-murid-keseluruhan" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-600 focus:outline-none bg-white">
+                                    <!-- Dynamic Options (1-40) -->
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Jumlah Murid Tidak Hadir <span class="text-rose-500">*</span></label>
+                                <select id="input-murid-absent" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-600 focus:outline-none bg-white">
+                                    <!-- Dynamic Options (0-20) -->
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Tingkah Laku Murid <span class="text-rose-500">*</span></label>
+                                <select id="input-tingkah-laku" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-600 focus:outline-none bg-white">
+                                    <option value="Cemerlang & Terkawal">Cemerlang & Terkawal</option>
+                                    <option value="Baik & Mendengar Arahan">Baik & Mendengar Arahan</option>
+                                    <option value="Sederhana / Agak Bising">Sederhana / Agak Bising</option>
+                                    <option value="Kurang Terkawal / Bising">Kurang Terkawal / Bising</option>
+                                    <option value="Perlu Perhatian Khas Disiplin">Perlu Perhatian Khas Disiplin</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mata Pelajaran & Tugasan -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Mata Pelajaran <span class="text-rose-500">*</span></label>
+                            <select id="input-subjek" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-600 focus:outline-none">
+                                <option value="Bahasa Melayu">Bahasa Melayu</option>
+                                <option value="Bahasa Inggeris">Bahasa Inggeris</option>
+                                <option value="Matematik">Matematik</option>
+                                <option value="Sains">Sains</option>
+                                <option value="Pendidikan Islam">Pendidikan Islam</option>
+                                <option value="Pendidikan Moral">Pendidikan Moral</option>
+                                <option value="Sejarah">Sejarah</option>
+                                <option value="RBT">RBT</option>
+                                <option value="PSV / Muzik">PSV / Muzik</option>
+                                <option value="PJK">PJK</option>
+                                <option value="Bahasa Arab">Bahasa Arab</option>
+                            </select>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Tugasan / Aktiviti Diberikan <span class="text-rose-500">*</span></label>
+                            <input type="text" id="input-tugasan" required placeholder="Contoh: Modul Latihan BM m/s 12 & Pembacaan Buku Storybook" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-600 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Catatan Tambahan -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Catatan Guru Relief (Opsional)</label>
+                        <textarea id="input-catatan" rows="2" placeholder="Catatan perkembangan murid, nama murid yang tidak hadir / masalah disiplin, dll." class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-600 focus:outline-none"></textarea>
+                    </div>
+
+                    <!-- Form Buttons -->
+                    <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
+                        <button type="button" onclick="showTab('dashboard')" class="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-800 rounded-xl">Batal</button>
+                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-6 py-2.5 rounded-xl shadow transition flex items-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i> Simpan Rekod Relief
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- ================= TAB 3: SENARAI GURU SKUK ================= -->
+        <section id="tab-guru" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">Direktori Guru SK Ulu Kenas</h2>
+                        <p class="text-xs text-slate-500">Senarai pentadbir dan guru akademik yang berdaftar dalam sistem</p>
+                    </div>
+                    <button onclick="openAddGuruModal()" class="bg-brand-700 hover:bg-brand-800 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow transition flex items-center gap-2 self-start sm:self-auto">
+                        <i class="fa-solid fa-user-plus"></i> Tambah Guru Baru
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="guru-card-grid">
+                    <!-- Guru Cards Dynamic -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 4: JANA SLIP RELIEF (DENGAN DROPDOWN PENTADBIR) ================= -->
+        <section id="tab-slip" class="hidden space-y-6">
+            
+            <!-- Controls Bar -->
+            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 no-print space-y-4">
+                <div>
+                    <h2 class="text-base font-bold text-slate-800">Cetak Slip / Minit Guru Relief Harian</h2>
+                    <p class="text-xs text-slate-500">Pilih tarikh, penyedia laporan dan pengesah rasmi sebelum mencetak.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Tarikh Laporan</label>
+                        <input type="date" id="slip-date-picker" onchange="renderSlipPreview()" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-600 focus:outline-none font-medium">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Disediakan Oleh (Penyelaras / Penolong) <span class="text-rose-500">*</span></label>
+                        <select id="slip-pilihan-disediakan" onchange="renderSlipPreview()" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-600 focus:outline-none bg-white">
+                            <!-- Dynamic Options -->
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Disahkan Oleh (Guru Besar / Pentadbiran) <span class="text-rose-500">*</span></label>
+                        <select id="slip-pilihan-disahkan" onchange="renderSlipPreview()" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-600 focus:outline-none bg-white">
+                            <!-- Dynamic Options -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-2">
+                    <button onclick="cetakTetingkap()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow">
+                        <i class="fa-solid fa-print"></i> Cetak Dokumen Slip
+                    </button>
+                </div>
+            </div>
+
+            <!-- Printable Template Area -->
+            <div id="printable-slip-area" class="bg-white p-8 rounded-2xl border border-slate-300 shadow-lg max-w-4xl mx-auto space-y-6">
+                <!-- Header Rasmi Suratan -->
+                <div class="flex items-center justify-between border-b-2 border-slate-800 pb-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-16 h-20 flex-shrink-0 flex items-center justify-center">
+                            <!-- Image Logo SKUK untuk Cetakan -->
+                            <img src="logo_skuk.png" alt="Logo SK Ulu Kenas" class="w-16 h-20 object-contain mx-auto" onerror="this.onerror=null; drawFallbackLogoToImg(this);">
+                        </div>
+                        <div>
+                            <h2 class="text-base font-extrabold text-slate-900 uppercase">SEKOLAH KEBANGSAAN ULU KENAS</h2>
+                            <p class="text-xs text-slate-700">33000 Kuala Kangsar, Perak Darul Ridzuan</p>
+                            <p class="text-[11px] text-slate-500">Kod Sekolah: ABA4015 | Tel: 05-7761000</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="inline-block bg-slate-100 text-slate-800 text-xs font-bold px-3 py-1 rounded border border-slate-300 uppercase tracking-wide">
+                            BORANG RELIEF RASMI
+                        </span>
+                        <p class="text-xs text-slate-600 mt-2">Tarikh: <span id="slip-tarikh-display" class="font-bold underline">---</span></p>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <h3 class="font-bold text-sm uppercase text-slate-900 tracking-wide">LAPORAN TUGASAN GURU GANTI (RELIEF) HARIAN</h3>
+                </div>
+
+                <!-- Printable Table -->
+                <table class="w-full text-xs border-collapse border border-slate-400">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-900">
+                            <th class="border border-slate-400 px-2 py-2 text-center w-8">Bil</th>
+                            <th class="border border-slate-400 px-2 py-2">Waktu / Masa</th>
+                            <th class="border border-slate-400 px-2 py-2">Guru Tidak Hadir</th>
+                            <th class="border border-slate-400 px-2 py-2">Guru Relief (Ganti)</th>
+                            <th class="border border-slate-400 px-2 py-2">Kelas / Subjek</th>
+                            <th class="border border-slate-400 px-2 py-2 text-center">Kehadiran & Disiplin</th>
+                            <th class="border border-slate-400 px-2 py-2">Tugasan Diberikan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="slip-table-body">
+                        <!-- Dynamic printable rows -->
+                    </tbody>
+                </table>
+
+                <!-- Ruangan Tandatangan -->
+                <div class="pt-12 grid grid-cols-2 gap-12 text-xs">
+                    <div>
+                        <p class="text-slate-600">Disediakan Oleh:</p>
+                        <div class="h-16 border-b border-dashed border-slate-400"></div>
+                        <p id="display-disediakan-nama" class="font-bold mt-2 text-slate-800">( Puan Rohana binti Ismail )</p>
+                        <p id="display-disediakan-jawatan" class="text-[11px] text-slate-500">PK Pentadbiran SK Ulu Kenas</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-600">Disahkan Oleh:</p>
+                        <div class="h-16 border-b border-dashed border-slate-400"></div>
+                        <p id="display-disahkan-nama" class="font-bold mt-2 text-slate-800">( En. Azman bin Ramli )</p>
+                        <p id="display-disahkan-jawatan" class="text-[11px] text-slate-500">Guru Besar SK Ulu Kenas</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Tambah Guru -->
+    <div id="modal-guru" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden no-print">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200">
+            <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-800 text-sm">Tambah Guru SKUK Baru</h3>
+                <button onclick="closeGuruModal()" class="text-slate-400 hover:text-slate-600 text-sm">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <form onsubmit="saveGuruBaru(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Nama Full Guru</label>
+                    <input type="text" id="guru-nama" required placeholder="Contoh: En. Ahmad Razali bin Hassan" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-600 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Jawatan / Gred</label>
+                    <select id="guru-jawatan" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-600 focus:outline-none">
+                        <option value="Guru Besar">Guru Besar</option>
+                        <option value="PK Pentadbiran">PK Pentadbiran</option>
+                        <option value="PK HEM">PK HEM</option>
+                        <option value="PK Kokurikulum">PK Kokurikulum</option>
+                        <option value="Guru Akademik Biasa">Guru Akademik Biasa</option>
+                        <option value="Guru Agama (GPI)">Guru Agama (GPI)</option>
+                        <option value="Guru Pemulihan">Guru Pemulihan</option>
+                        <option value="Guru Pra-Sekolah">Guru Pra-Sekolah</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Subjek Utama / Opsyen</label>
+                    <input type="text" id="guru-opsyen" placeholder="Contoh: Bahasa Melayu / Sejarah" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-600 focus:outline-none">
+                </div>
+                <div class="flex items-center justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeGuruModal()" class="px-3 py-2 text-xs font-bold text-slate-600 hover:text-slate-800">Batal</button>
+                    <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs px-4 py-2 rounded-xl transition">Simpan Guru</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-12 py-4 no-print">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
+            &copy; <span id="current-year"></span> SK Ulu Kenas, Kuala Kangsar, Perak &bull; Sistem Pengurusan Relief Guru
+        </div>
+    </footer>
+
+    <!-- Logic Script -->
+    <script>
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        // Data Senarai Guru
+        let listGuru = JSON.parse(localStorage.getItem('skuk_teachers')) || [
+            { id: 'g1', nama: 'En. Azman bin Ramli', jawatan: 'Guru Besar', opsyen: 'Pengurusan' },
+            { id: 'g2', nama: 'Pn. Rohana binti Ismail', jawatan: 'PK Pentadbiran', opsyen: 'Bahasa Melayu' },
+            { id: 'g3', nama: 'En. Mohd Rizal bin Ahmad', jawatan: 'PK HEM', opsyen: 'Sains' },
+            { id: 'g4', nama: 'Pn. Noraini binti Yusof', jawatan: 'PK Kokurikulum', opsyen: 'Matematik' },
+            { id: 'g5', nama: 'En. Khairul Anuar bin Zulkifli', jawatan: 'Guru Akademik Biasa', opsyen: 'Bahasa Inggeris' },
+            { id: 'g6', nama: 'Pn. Siti Hajar binti Abdullah', jawatan: 'Guru Akademik Biasa', opsyen: 'Bahasa Melayu' },
+            { id: 'g7', nama: 'Ustaz Ahmad Tarmizi bin Hassan', jawatan: 'Guru Agama (GPI)', opsyen: 'Pendidikan Islam' },
+            { id: 'g8', nama: 'Ustazah Nurul Huda binti Othman', jawatan: 'Guru Agama (GPI)', opsyen: 'Bahasa Arab' },
+            { id: 'g9', nama: 'En. Hafiz bin Salleh', jawatan: 'Guru Akademik Biasa', opsyen: 'RBT / Sejarah' },
+            { id: 'g10', nama: 'Pn. Zubaidah binti Hashim', jawatan: 'Guru Akademik Biasa', opsyen: 'Sains / PJK' },
+            { id: 'g11', nama: 'Pn. Mastura binti Che Mat', jawatan: 'Guru Akademik Biasa', opsyen: 'PSV / Muzik' },
+            { id: 'g12', nama: 'Pn. Suraya binti Ibrahim', jawatan: 'Guru Pemulihan', opsyen: 'Pemulihan Khas' }
+        ];
+
+        // Sample Relief Records
+        let listRelief = JSON.parse(localStorage.getItem('skuk_relief_records')) || [
+            {
+                id: 'r1',
+                tarikh: new Date().toISOString().split('T')[0],
+                waktu: 'Waktu 2 (08:15 - 08:45)',
+                guruAbsent: 'En. Khairul Anuar bin Zulkifli',
+                sebab: 'Kursus / Bengkel',
+                guruRelief: 'Pn. Siti Hajar binti Abdullah',
+                kelas: 'Tahun 4 Dinamik',
+                muridKeseluruhan: 28,
+                muridAbsent: 2,
+                tingkahLaku: 'Baik & Mendengar Arahan',
+                subjek: 'Bahasa Inggeris',
+                tugasan: 'Latihan Unit 3 Workbook m/s 24',
+                catatan: 'Murid menyiap tugasan yang diberikan'
+            },
+            {
+                id: 'r2',
+                tarikh: new Date().toISOString().split('T')[0],
+                waktu: 'Waktu 4 (09:15 - 09:45)',
+                guruAbsent: 'Ustaz Ahmad Tarmizi bin Hassan',
+                sebab: 'Cuti Sakit (MC)',
+                guruRelief: 'En. Hafiz bin Salleh',
+                kelas: 'Tahun 6 Fikrah',
+                muridKeseluruhan: 25,
+                muridAbsent: 0,
+                tingkahLaku: 'Cemerlang & Terkawal',
+                subjek: 'Pendidikan Islam',
+                tugasan: 'Ulangkaji Tajuk Sirah Nabawiyah',
+                catatan: 'Kehadiran penuh dan kelas berjalan lancar'
+            }
+        ];
+
+        // Init App
+        window.addEventListener('DOMContentLoaded', () => {
+            const todayStr = new Date().toISOString().split('T')[0];
+            document.getElementById('filter-date').value = todayStr;
+            document.getElementById('input-tarikh').value = todayStr;
+            document.getElementById('slip-date-picker').value = todayStr;
+
+            populateDropdownNumbers();
+            populateTeacherDropdowns();
+            populateSlipSignerDropdowns();
+            renderReliefTable();
+            renderGuruGrid();
+            updateStats();
+        });
+
+        // Tab Navigation Logic
+        function showTab(tabName) {
+            const tabs = ['dashboard', 'borang', 'guru', 'slip'];
+            tabs.forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`tab-btn-${t}`);
+                if (btn) {
+                    btn.classList.remove('border-brand-600', 'text-brand-600');
+                    btn.classList.add('border-transparent', 'text-slate-500');
+                }
+            });
+
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('border-transparent', 'text-slate-500');
+                activeBtn.classList.add('border-brand-600', 'text-brand-600');
+            }
+
+            if (tabName === 'slip') {
+                renderSlipPreview();
+            }
+        }
+
+        function populateDropdownNumbers() {
+            const selectKeseluruhan = document.getElementById('input-murid-keseluruhan');
+            const selectAbsent = document.getElementById('input-murid-absent');
+
+            selectKeseluruhan.innerHTML = '';
+            for (let i = 5; i <= 40; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = `${i} orang murid`;
+                if (i === 25) opt.selected = true;
+                selectKeseluruhan.appendChild(opt);
+            }
+
+            selectAbsent.innerHTML = '';
+            for (let i = 0; i <= 20; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = i === 0 ? '0 (Semua Hadir)' : `${i} orang murid`;
+                selectAbsent.appendChild(opt);
+            }
+        }
+
+        function populateTeacherDropdowns() {
+            const selectAbsent = document.getElementById('input-guru-absent');
+            const selectRelief = document.getElementById('input-guru-relief');
+
+            selectAbsent.innerHTML = '<option value="">-- Pilih Guru Tidak Hadir --</option>';
+            selectRelief.innerHTML = '<option value="">-- Pilih Guru Ganti (Relief) --</option>';
+
+            listGuru.forEach(g => {
+                selectAbsent.innerHTML += `<option value="${g.nama}">${g.nama} (${g.jawatan})</option>`;
+                selectRelief.innerHTML += `<option value="${g.nama}">${g.nama}</option>`;
+            });
+        }
+
+        function populateSlipSignerDropdowns() {
+            const selectDisediakan = document.getElementById('slip-pilihan-disediakan');
+            const selectDisahkan = document.getElementById('slip-pilihan-disahkan');
+
+            selectDisediakan.innerHTML = '';
+            selectDisahkan.innerHTML = '';
+
+            listGuru.forEach(g => {
+                const optD = document.createElement('option');
+                optD.value = JSON.stringify({ nama: g.nama, jawatan: g.jawatan });
+                optD.textContent = `${g.nama} (${g.jawatan})`;
+                if (g.jawatan.includes('PK Pentadbiran')) optD.selected = true;
+                selectDisediakan.appendChild(optD);
+
+                const optS = document.createElement('option');
+                optS.value = JSON.stringify({ nama: g.nama, jawatan: g.jawatan });
+                optS.textContent = `${g.nama} (${g.jawatan})`;
+                if (g.jawatan.includes('Guru Besar')) optS.selected = true;
+                selectDisahkan.appendChild(optS);
+            });
+        }
+
+        function renderReliefTable() {
+            const tbody = document.getElementById('relief-table-body');
+            const emptyState = document.getElementById('empty-state');
+            const filterSearch = document.getElementById('filter-search').value.toLowerCase();
+            const filterDate = document.getElementById('filter-date').value;
+
+            tbody.innerHTML = '';
+
+            let filtered = listRelief.filter(item => {
+                const matchSearch = item.guruAbsent.toLowerCase().includes(filterSearch) ||
+                                    item.guruRelief.toLowerCase().includes(filterSearch) ||
+                                    item.kelas.toLowerCase().includes(filterSearch) ||
+                                    (item.tingkahLaku && item.tingkahLaku.toLowerCase().includes(filterSearch)) ||
+                                    item.subjek.toLowerCase().includes(filterSearch);
+                const matchDate = filterDate ? item.tarikh === filterDate : true;
+                return matchSearch && matchDate;
+            });
+
+            document.getElementById('record-count-badge').textContent = `${filtered.length} Rekod`;
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            filtered.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50/80 transition';
+
+                const total = parseInt(item.muridKeseluruhan) || 25;
+                const absent = parseInt(item.muridAbsent) || 0;
+                const hadir = total - absent;
+
+                let behaviorBadgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                if (item.tingkahLaku && item.tingkahLaku.includes('Agak Bising')) {
+                    behaviorBadgeClass = 'bg-amber-50 text-amber-700 border-amber-200';
+                } else if (item.tingkahLaku && (item.tingkahLaku.includes('Kurang Terkawal') || item.tingkahLaku.includes('Perhatian Khas'))) {
+                    behaviorBadgeClass = 'bg-rose-50 text-rose-700 border-rose-200';
+                }
+
+                tr.innerHTML = `
+                    <td class="px-4 py-3.5">
+                        <div class="font-bold text-slate-800">${formatDateMalay(item.tarikh)}</div>
+                        <div class="text-[11px] text-brand-700 font-semibold bg-brand-50 px-2 py-0.5 rounded-md inline-block mt-1">${item.waktu}</div>
+                    </td>
+                    <td class="px-4 py-3.5">
+                        <div class="font-semibold text-rose-700">${item.guruAbsent}</div>
+                        <span class="inline-block text-[10px] font-bold bg-rose-100 text-rose-800 px-2 py-0.5 rounded-full mt-1">${item.sebab}</span>
+                    </td>
+                    <td class="px-4 py-3.5">
+                        <div class="font-bold text-emerald-800 flex items-center gap-1.5">
+                            <i class="fa-solid fa-circle-check text-emerald-500"></i> ${item.guruRelief}
+                        </div>
+                    </td>
+                    <td class="px-4 py-3.5">
+                        <div class="font-bold text-slate-800">${item.kelas}</div>
+                        <div class="text-slate-500 text-[11px]">${item.subjek}</div>
+                    </td>
+                    <td class="px-4 py-3.5">
+                        <div class="font-bold text-slate-800">${hadir} / ${total} Hadir</div>
+                        <div class="text-[10px] ${absent > 0 ? 'text-rose-600 font-semibold' : 'text-slate-400'}">(${absent} Tidak Hadir)</div>
+                    </td>
+                    <td class="px-4 py-3.5">
+                        <span class="inline-block px-2.5 py-1 text-[10px] font-bold border rounded-lg ${behaviorBadgeClass}">
+                            ${item.tingkahLaku || 'Baik & Terkawal'}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3.5 max-w-xs">
+                        <p class="text-slate-700 line-clamp-2">${item.tugasan}</p>
+                        ${item.catatan ? `<p class="text-[10px] text-slate-400 italic mt-0.5">"${item.catatan}"</p>` : ''}
+                    </td>
+                    <td class="px-4 py-3.5 text-center no-print">
+                        <div class="flex items-center justify-center gap-2">
+                            <button onclick="editReliefRecord('${item.id}')" class="p-1.5 text-slate-500 hover:text-brand-600 hover:bg-slate-100 rounded-lg transition" title="Edit">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button onclick="deleteReliefRecord('${item.id}')" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition" title="Padam">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function saveReliefRecord(event) {
+            event.preventDefault();
+
+            const editId = document.getElementById('edit-id').value;
+            const newRecord = {
+                id: editId || 'r_' + Date.now(),
+                tarikh: document.getElementById('input-tarikh').value,
+                waktu: document.getElementById('input-waktu').value,
+                guruAbsent: document.getElementById('input-guru-absent').value,
+                sebab: document.getElementById('input-sebab').value,
+                guruRelief: document.getElementById('input-guru-relief').value,
+                kelas: document.getElementById('input-kelas').value,
+                muridKeseluruhan: document.getElementById('input-murid-keseluruhan').value,
+                muridAbsent: document.getElementById('input-murid-absent').value,
+                tingkahLaku: document.getElementById('input-tingkah-laku').value,
+                subjek: document.getElementById('input-subjek').value,
+                tugasan: document.getElementById('input-tugasan').value,
+                catatan: document.getElementById('input-catatan').value
+            };
+
+            if (editId) {
+                const index = listRelief.findIndex(r => r.id === editId);
+                if (index !== -1) listRelief[index] = newRecord;
+            } else {
+                listRelief.unshift(newRecord);
+            }
+
+            localStorage.setItem('skuk_relief_records', JSON.stringify(listRelief));
+            
+            document.getElementById('form-relief').reset();
+            document.getElementById('edit-id').value = '';
+            populateDropdownNumbers();
+            
+            updateStats();
+            renderReliefTable();
+            showTab('dashboard');
+        }
+
+        function deleteReliefRecord(id) {
+            if (confirm('Adakah anda pasti untuk memadam rekod relief ini?')) {
+                listRelief = listRelief.filter(r => r.id !== id);
+                localStorage.setItem('skuk_relief_records', JSON.stringify(listRelief));
+                renderReliefTable();
+                updateStats();
+            }
+        }
+
+        function editReliefRecord(id) {
+            const item = listRelief.find(r => r.id === id);
+            if (!item) return;
+
+            document.getElementById('edit-id').value = item.id;
+            document.getElementById('input-tarikh').value = item.tarikh;
+            document.getElementById('input-waktu').value = item.waktu;
+            document.getElementById('input-guru-absent').value = item.guruAbsent;
+            document.getElementById('input-sebab').value = item.sebab;
+            document.getElementById('input-guru-relief').value = item.guruRelief;
+            document.getElementById('input-kelas').value = item.kelas;
+            document.getElementById('input-murid-keseluruhan').value = item.muridKeseluruhan || 25;
+            document.getElementById('input-murid-absent').value = item.muridAbsent || 0;
+            document.getElementById('input-tingkah-laku').value = item.tingkahLaku || 'Baik & Mendengar Arahan';
+            document.getElementById('input-subjek').value = item.subjek;
+            document.getElementById('input-tugasan').value = item.tugasan;
+            document.getElementById('input-catatan').value = item.catatan || '';
+
+            showTab('borang');
+        }
+
+        function renderGuruGrid() {
+            const grid = document.getElementById('guru-card-grid');
+            grid.innerHTML = '';
+
+            listGuru.forEach(g => {
+                const isPentadbir = g.jawatan.includes('Guru Besar') || g.jawatan.includes('PK');
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-2xl border ${isPentadbir ? 'bg-gradient-to-br from-amber-50/60 to-white border-amber-200' : 'bg-white border-slate-200/80'} shadow-sm flex items-start justify-between gap-3`;
+
+                card.innerHTML = `
+                    <div class="flex items-start space-x-3">
+                        <div class="w-10 h-10 rounded-xl ${isPentadbir ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-brand-700'} font-bold flex items-center justify-center text-sm flex-shrink-0">
+                            ${g.nama.charAt(0)}
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-xs text-slate-800">${g.nama}</h4>
+                            <p class="text-[11px] font-semibold ${isPentadbir ? 'text-amber-700' : 'text-slate-500'}">${g.jawatan}</p>
+                            <span class="inline-block bg-slate-100 text-slate-600 text-[10px] px-2 py-0.5 rounded-full mt-2">Opsyen: ${g.opsyen}</span>
+                        </div>
+                    </div>
+                    <button onclick="deleteGuru('${g.id}')" class="text-slate-300 hover:text-rose-500 text-xs no-print">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+
+            document.getElementById('stat-total-staff').textContent = listGuru.length;
+        }
+
+        function openAddGuruModal() {
+            document.getElementById('modal-guru').classList.remove('hidden');
+        }
+
+        function closeGuruModal() {
+            document.getElementById('modal-guru').classList.add('hidden');
+        }
+
+        function saveGuruBaru(e) {
+            e.preventDefault();
+            const nama = document.getElementById('guru-nama').value;
+            const jawatan = document.getElementById('guru-jawatan').value;
+            const opsyen = document.getElementById('guru-opsyen').value || 'Am';
+
+            const newG = { id: 'g_' + Date.now(), nama, jawatan, opsyen };
+            listGuru.push(newG);
+
+            localStorage.setItem('skuk_teachers', JSON.stringify(listGuru));
+            
+            populateTeacherDropdowns();
+            populateSlipSignerDropdowns();
+            renderGuruGrid();
+            closeGuruModal();
+        }
+
+        function deleteGuru(id) {
+            if (confirm('Padam nama guru dari senarai sekolah?')) {
+                listGuru = listGuru.filter(g => g.id !== id);
+                localStorage.setItem('skuk_teachers', JSON.stringify(listGuru));
+                populateTeacherDropdowns();
+                populateSlipSignerDropdowns();
+                renderGuruGrid();
+            }
+        }
+
+        function renderSlipPreview() {
+            const targetDate = document.getElementById('slip-date-picker').value;
+            document.getElementById('slip-tarikh-display').textContent = formatDateMalay(targetDate);
+
+            const valDisediakan = document.getElementById('slip-pilihan-disediakan').value;
+            const valDisahkan = document.getElementById('slip-pilihan-disahkan').value;
+
+            if (valDisediakan) {
+                const dObj = JSON.parse(valDisediakan);
+                document.getElementById('display-disediakan-nama').textContent = `( ${dObj.nama} )`;
+                document.getElementById('display-disediakan-jawatan').textContent = `${dObj.jawatan} SK Ulu Kenas`;
+            }
+
+            if (valDisahkan) {
+                const sObj = JSON.parse(valDisahkan);
+                document.getElementById('display-disahkan-nama').textContent = `( ${sObj.nama} )`;
+                document.getElementById('display-disahkan-jawatan').textContent = `${sObj.jawatan} SK Ulu Kenas`;
+            }
+
+            const tbody = document.getElementById('slip-table-body');
+            tbody.innerHTML = '';
+
+            const items = listRelief.filter(r => r.tarikh === targetDate);
+
+            if (items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="border border-slate-400 p-4 text-center text-slate-500 italic">Tiada sebarang rekod relief pada tarikh ini (${formatDateMalay(targetDate)}).</td>td></tr>`;
+                return;
+            }
+
+            items.forEach((item, idx) => {
+                const total = parseInt(item.muridKeseluruhan) || 25;
+                const absent = parseInt(item.muridAbsent) || 0;
+                const hadir = total - absent;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="border border-slate-400 p-2 text-center font-bold">${idx + 1}</td>
+                    <td class="border border-slate-400 p-2 font-medium">${item.waktu}</td>
+                    <td class="border border-slate-400 p-2 font-semibold text-rose-900">${item.guruAbsent}<br><span class="text-[10px] text-slate-500">(${item.sebab})</span></td>
+                    <td class="border border-slate-400 p-2 font-bold text-slate-900">${item.guruRelief}</td>
+                    <td class="border border-slate-400 p-2 font-semibold">${item.kelas}<br><span class="text-[10px] text-slate-500">${item.subjek}</span></td>
+                    <td class="border border-slate-400 p-2 text-center">
+                        <div class="font-bold text-slate-800">${hadir}/${total} Hadir</div>
+                        <div class="text-[10px] font-semibold text-amber-900 mt-0.5">${item.tingkahLaku || 'Terkawal'}</div>
+                    </td>
+                    <td class="border border-slate-400 p-2">${item.tugasan}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // FUNGSI CETAK TETINGKAP POPUP (PRINT)
+        function cetakTetingkap() {
+            showTab('slip');
+            renderSlipPreview();
+
+            const content = document.getElementById('printable-slip-area').outerHTML;
+            const printWindow = window.open('', '_blank', 'height=800,width=1000');
+
+            printWindow.document.write('<html><head><title>Cetak Slip Relief - SK Ulu Kenas</title>');
+            printWindow.document.write('<script src="https://cdn.tailwindcss.com"><\/script>');
+            printWindow.document.write('<style>body { font-family: sans-serif; padding: 20px; }</style>');
+            printWindow.document.write('</head><body>');
+            printWindow.document.write(content);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+
+            setTimeout(() => {
+                printWindow.focus();
+                printWindow.print();
+            }, 500);
+        }
+
+        // FUNGSI JANA LOGO APABILA FAIL logo_skuk.png TIADA
+        function drawFallbackLogoToImg(imgEl) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 400;
+            canvas.height = 480;
+            const ctx = canvas.getContext('2d');
+
+            // Draw Crest Base Shape
+            ctx.fillStyle = '#FFFFFF';
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 10;
+            
+            // Shield outer
+            ctx.beginPath();
+            ctx.moveTo(200, 20);
+            ctx.bezierCurveTo(300, 20, 370, 50, 370, 50);
+            ctx.bezierCurveTo(370, 260, 200, 370, 200, 370);
+            ctx.bezierCurveTo(200, 370, 30, 260, 30, 50);
+            ctx.bezierCurveTo(30, 50, 100, 20, 200, 20);
+            ctx.fill();
+            ctx.stroke();
+
+            // Colored sections
+            ctx.fillStyle = '#128838'; // Left Green
+            ctx.beginPath();
+            ctx.moveTo(200, 44);
+            ctx.lineTo(60, 68);
+            ctx.bezierCurveTo(60, 240, 200, 330, 200, 330);
+            ctx.closePath(); ctx.fill();
+
+            ctx.fillStyle = '#1a4bb7'; // Right Blue
+            ctx.beginPath();
+            ctx.moveTo(200, 44);
+            ctx.lineTo(340, 68);
+            ctx.bezierCurveTo(340, 240, 200, 330, 200, 330);
+            ctx.closePath(); ctx.fill();
+
+            ctx.fillStyle = '#d91a21'; // Center Red
+            ctx.beginPath();
+            ctx.moveTo(200, 44);
+            ctx.lineTo(130, 56);
+            ctx.lineTo(200, 330);
+            ctx.lineTo(270, 56);
+            ctx.closePath(); ctx.fill();
+
+            // Ribbon top text
+            ctx.fillStyle = '#FFFFFF'; ctx.strokeStyle = '#000000'; ctx.lineWidth = 4;
+            ctx.fillRect(100, 80, 200, 40);
+            ctx.strokeRect(100, 80, 200, 40);
+            ctx.fillStyle = '#000000'; ctx.font = '900 18px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('ILMU SULUH HIDUP', 200, 106);
+
+            // Ribbon Bottom
+            ctx.fillStyle = '#FFFFFF'; ctx.strokeStyle = '#000000'; ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.moveTo(40, 290);
+            ctx.quadraticCurveTo(200, 330, 360, 290);
+            ctx.lineTo(350, 390);
+            ctx.quadraticCurveTo(200, 430, 50, 390);
+            ctx.closePath();
+            ctx.fill(); ctx.stroke();
+
+            ctx.fillStyle = '#000000'; ctx.font = '800 18px sans-serif';
+            ctx.fillText('SEKOLAH KEBANGSAAN', 200, 332);
+            ctx.font = '900 22px sans-serif';
+            ctx.fillText('ULU KENAS', 200, 365);
+
+            imgEl.src = canvas.toDataURL('image/png');
+        }
+
+        function updateStats() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const todayRecords = listRelief.filter(r => r.tarikh === todayStr);
+
+            document.getElementById('stat-today-total').textContent = todayRecords.length;
+
+            const absentTeachers = new Set(todayRecords.map(r => r.guruAbsent));
+            document.getElementById('stat-absent-count').textContent = absentTeachers.size;
+
+            const reliefTeachers = new Set(todayRecords.map(r => r.guruRelief));
+            document.getElementById('stat-relief-teachers').textContent = reliefTeachers.size;
+        }
+
+        function resetFilters() {
+            document.getElementById('filter-search').value = '';
+            document.getElementById('filter-date').value = new Date().toISOString().split('T')[0];
+            renderReliefTable();
+        }
+
+        function formatDateMalay(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('ms-MY', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+    </script>
+</body>
+</html>
